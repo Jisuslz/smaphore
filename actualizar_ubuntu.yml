@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+    - name: Asegurar que APT esté en modo non-interactive
+      apt:
+        autoclean: yes
+        update_cache: yes
+  tasks:
+    - name: Actualizar paquetes del sistema
+      apt:
+        upgrade: yes
+        autoremove: yes
+    - name: Reiniciar servidor
+      reboot:
+        when: ansible_reboot_required
+  post_tasks:
+    - name: Mostrar paquetes actualizados
+      apt:
+        cache_valid_time: 0
+        list: upgraded
