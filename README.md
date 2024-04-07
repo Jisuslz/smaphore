@@ -81,3 +81,124 @@ Para Ansible, hay una variedad de scripts y playbooks que pueden ser poderosos y
     ```
 
 Estos son solo algunos ejemplos de scripts y playbooks que pueden ser útiles para administrar servidores Ubuntu con Ansible. Puedes personalizarlos según tus necesidades específicas y agregar más tareas según sea necesario.
+
+
+-----------------------
+ejemplos de tareas de Ansible enfocadas en seguridad para servidores Ubuntu:
+
+1. **Configuración de SSH para Autenticación de Claves y Deshabilitación de Acceso de Root**:
+
+    ```yaml
+    ---
+    - hosts: all
+      become: true
+      tasks:
+        - name: Disallow root login via SSH
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            regexp: '^PermitRootLogin'
+            line: 'PermitRootLogin no'
+            state: present
+            backup: yes
+
+        - name: Disable password authentication
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            regexp: '^PasswordAuthentication'
+            line: 'PasswordAuthentication no'
+            state: present
+            backup: yes
+
+        - name: Restart SSH service
+          service:
+            name: sshd
+            state: restarted
+    ```
+
+2. **Instalación y Configuración de Fail2Ban**:
+
+    ```yaml
+    ---
+    - hosts: all
+      become: true
+      tasks:
+        - name: Install Fail2Ban
+          apt:
+            name: fail2ban
+            state: present
+
+        - name: Copy Fail2Ban configuration
+          template:
+            src: fail2ban.j2
+            dest: /etc/fail2ban/jail.local
+            owner: root
+            group: root
+            mode: '0644'
+
+        - name: Restart Fail2Ban
+          service:
+            name: fail2ban
+            state: restarted
+    ```
+
+    Contenido del archivo `fail2ban.j2`:
+
+    ```ini
+    [DEFAULT]
+    ignoreip = 127.0.0.1/8 ::1
+    bantime = 3600
+    findtime = 600
+    maxretry = 3
+    ```
+
+3. **Configuración de Firewall Avanzada con iptables o nftables**:
+
+    Puedes utilizar módulos de Ansible como `iptables`, `nftables`, o `ufw` para configurar un firewall más avanzado según tus necesidades de seguridad específicas. Por ejemplo:
+
+    ```yaml
+    ---
+    - hosts: all
+      become: true
+      tasks:
+        - name: Configure iptables
+          iptables:
+            chain: INPUT
+            state: present
+            policy: DROP
+          when: ansible_os_family == 'Debian'
+    ```
+
+    Este ejemplo configura una política predeterminada de denegar todo el tráfico de entrada en un servidor Ubuntu utilizando iptables.
+
+4. **Configuración de Auditoría de Sistema con Auditd**:
+
+    ```yaml
+    ---
+    - hosts: all
+      become: true
+      tasks:
+        - name: Install auditd
+          apt:
+            name: auditd
+            state: present
+
+        - name: Ensure auditd service is running
+          service:
+            name: auditd
+            state: started
+            enabled: yes
+
+        - name: Copy auditd rules
+          copy:
+            src: audit.rules
+            dest: /etc/audit/rules.d/audit.rules
+            owner: root
+            group: root
+            mode: '0640'
+
+        - name: Reload auditd rules
+          command: auditctl -R /etc/audit/rules.d/audit.rules
+    ```
+
+    En este ejemplo, se instala el paquete `auditd` y se configuran reglas de auditoría específicas.
+
