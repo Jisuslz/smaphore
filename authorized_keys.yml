@@ -1,0 +1,27 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Create user adminlab
+      user:
+        name: adminlab
+        state: present
+        groups: sudo
+        append: yes
+
+    - name: Create .ssh directory for adminlab
+      file:
+        path: /home/adminlab/.ssh
+        state: directory
+        owner: adminlab
+        group: adminlab
+        mode: '0700'
+
+    - name: Create authorized_keys file for adminlab
+      lineinfile:
+        path: /home/adminlab/.ssh/authorized_keys
+        line: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCVibNeBRohy89ZwPCJTHIsz69KWeDV3S/0BvSmHBbqMZrnvvsAywG5DyMh3yVK9jKb7drNjj2kVbUlwYwUwUw16kJnXiAQ8Hp+JzjQ4dFouJENGQcH62ujysEQmAoSV77TA+UQ+tXlKXcu6rAx3nCjRkzVHcenp4kBi0hwGPntY7025uYyJzUQcAfZq308pS5J6gXJpJyv5TN7xj9ovUxUhzLvU21bxxMGsf6eVxBvC7xp+02VUCOWus5onAxrKKwYxqAtMI3vzubZtMgmW7bKKzGUG7ztkaXu6tGcTpJC6XpnBhKvPdr44f4vnqzd1C7ZP3dQ3oCesQoJXp+YHS3p7XMXKiiRHFrPLCVAq5nqOrDis75ke5D2phtTWPehYZd8Yc9DOy2OqqCrXKBeV8dUP3UnoGWCbWBRFcyAyuhp5/Mp8/TdeeXNyUOmatObSXEImx+dH3ytYLlWXnoRfWVwxiVT167GjjCOvtn0IcgBUMyTUbp2M/CQCgh6VZWRiXk= semaphore@92186a22839e"
+        create: yes
+        owner: adminlab
+        group: adminlab
+        mode: '0600'
