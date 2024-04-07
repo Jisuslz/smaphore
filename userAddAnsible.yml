@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Create user adminlab
+      user:
+        name: adminlab
+        state: present
+        groups: sudo
+        append: yes
+
+    - name: Create .ssh directory for adminlab
+      file:
+        path: /home/adminlab/.ssh
+        state: directory
+        owner: adminlab
+        group: adminlab
+        mode: '0700'
+
+    - name: Create authorized_keys file for adminlab
+      file:
+        path: /home/adminlab/.ssh/authorized_keys
+        state: touch
+        owner: adminlab
+        group: adminlab
+        mode: '0600'
