@@ -1,0 +1,24 @@
+---
+- name: Instalar Apache, Docker, actualizar el sistema y net-tools
+  hosts: all
+  become: yes
+  tasks:
+    - name: Actualizar el sistema
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Instalar Apache
+      apt:
+        name: apache2
+        state: present
+
+    - name: Instalar net-tools
+      apt:
+        name: net-tools
+        state: present
+
+    - name: Instalar Docker
+      apt:
+        name: docker.io
+        state: present
