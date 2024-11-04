@@ -1,18 +1,27 @@
 ---
-- name: Configuración de MySQL y zabbix
+- name: Configuración de MySQL y Zabbix
   hosts: db
   become: yes
 
   tasks:
+    - name: Actualizar la lista de paquetes de APT (solo Debian/Ubuntu)
+      apt:
+        update_cache: yes
+
     - name: Instalar MySQL Server
       apt:
         name: mysql-server
         state: present
 
-    - name: Instalar python
+    - name: Instalar python3-pymysql (para compatibilidad con Ansible)
       apt:
         name: python3-pymysql
         state: present
+
+    - name: Habilitar el servicio MySQL para que arranque en el inicio
+      systemd:
+        name: mysql
+        enabled: yes
 
     - name: Iniciar el servicio MySQL
       service:
@@ -24,8 +33,11 @@
         path: /etc/mysql/mysql.conf.d/mysqld.cnf
         regexp: '^bind-address'
         line: 'bind-address = 0.0.0.0'
+        state: present
+        backup: yes  # Crea una copia de seguridad del archivo antes de editarlo
 
-    - name: Reiniciar MySQL
+    - name: Reiniciar MySQL para aplicar cambios de configuración
       service:
         name: mysql
         state: restarted
+
