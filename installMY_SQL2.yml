@@ -16,7 +16,7 @@
 
     - name: Iniciar el servicio MySQL
       service:
-        name: mysqld
+        name: mysql
         state: started
 
     - name: Configurar acceso remoto desde 0.0.0.0
