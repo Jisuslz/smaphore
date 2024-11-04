@@ -1,0 +1,82 @@
+---
+- name: Instalación Grafana
+  hosts: hosts
+  become: yes
+
+  tasks:
+    - name: Instalar apt-transport-https
+      apt:
+        name: apt-transport-https
+        state: present
+
+    - name: Instalar software-properties-common
+      apt:
+        name: software-properties-common
+        state: present
+
+    - name: Instalar wget
+      apt:
+        name: wget
+        state: present
+
+    - name: Crear directorio /etc/apt/keyrings/
+      become: yes
+      file:
+        path: /etc/apt/keyrings/
+        state: directory
+
+    - name: Descargar la clave GPG de Grafana
+      become: yes
+      shell: wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg > /dev/null
+
+    - name: Agregar repositorio
+      become: yes
+      shell: echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+
+    - name: Actualizar paquetes
+      become: yes
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Instalar Grafana
+      apt:
+        name: grafana
+        state: present
+
+    - name: Iniciar servicio Grafana
+      service:
+        name: grafana-server
+        state: started
+        daemon_reload: true
+        enabled: yes
+
+    - name: Configurar aplicación en modo producción
+      lineinfile:
+        path: /etc/grafana/grafana.ini
+        regexp: '^;app_mode = production'
+        line: 'app_mode = production'
+
+    - name: Crear carpeta
+      ansible.builtin.file:
+        path: /etc/systemd/system/grafana-server.service.d
+        state: directory
+
+    - name: Crear archivo override.conf
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/grafana-server.service.d/override.conf
+        content: |
+          [Service]
+          # Give the CAP_NET_BIND_SERVICE capability
+          CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+          AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+          # A private user cannot have process capabilities on the host's user
+          # namespace and thus CAP_NET_BIND_SERVICE has no effect.
+          PrivateUsers=false
+
+    - name: Reiniciar servicio Grafana
+      service:
+        name: grafana-server
+        state: restarted
+
