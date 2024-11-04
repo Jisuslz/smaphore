@@ -1,0 +1,31 @@
+---
+- name: Configuración de MySQL y zabbix
+  hosts: db
+  become: yes
+
+  tasks:
+    - name: Instalar MySQL Server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Instalar python
+      apt:
+        name: python3-pymysql
+        state: present
+
+    - name: Iniciar el servicio MySQL
+      service:
+        name: mysql
+        state: started
+
+    - name: Configurar acceso remoto desde 0.0.0.0
+      lineinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^bind-address'
+        line: 'bind-address = 0.0.0.0'
+
+    - name: Reiniciar MySQL
+      service:
+        name: mysql
+        state: restarted
