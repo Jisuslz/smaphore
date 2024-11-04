@@ -14,18 +14,18 @@
         name: python3-pymysql
         state: present
 
-    - name: Iniciar el servicio MySQL
-      service:
-        name: mysql
-        state: started
+    # - name: Iniciar el servicio MySQL
+    #   service:
+    #     name: mysql
+    #     state: started
 
-    - name: Configurar acceso remoto desde 0.0.0.0
-      lineinfile:
-        path: /etc/mysql/mysql.conf.d/mysqld.cnf
-        regexp: '^bind-address'
-        line: 'bind-address = 0.0.0.0'
+    # - name: Configurar acceso remoto desde 0.0.0.0
+    #   lineinfile:
+    #     path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    #     regexp: '^bind-address'
+    #     line: 'bind-address = 0.0.0.0'
 
-    - name: Reiniciar MySQL
-      service:
-        name: mysql
-        state: restarted
+    # - name: Reiniciar MySQL
+    #   service:
+    #     name: mysql
+    #     state: restarted
