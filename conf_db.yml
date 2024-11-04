@@ -1,0 +1,31 @@
+---
+- name: Configurar base de datos MySQL para Zabbix
+  hosts: db
+  become: yes
+  vars:
+    db_name: zabbix
+    db_user: zabbix
+    db_password: Huawei12#$
+    remote_host: 192.168.1.9
+
+  tasks:
+    - name: Crear base de datos Zabbix
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Crear usuario de base de datos con acceso remoto
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        host: "{{ remote_host }}"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Configurar log_bin_trust_function_creators
+      mysql_variables:
+        variable: log_bin_trust_function_creators
+        value: 1
+        login_unix_socket: /var/run/mysqld/mysqld.sock
