@@ -3,15 +3,11 @@
   hosts: zabbix
   become: yes
   vars:
-    # Ruta del intérprete de Python en el entorno virtual
-    ansible_python_interpreter: ~/pymysql_env/bin/python
-
     # Variables para la base de datos
     db_host: "192.168.1.12"
     db_name: "zabbix"
     db_user: "zabbix"
     db_password: "Huawei12#$"
-    
     # Variables para PHP timezone
     php_timezone: "America/Bogota"
 
@@ -95,6 +91,7 @@
         line: "        php_value date.timezone {{ php_timezone }}"
       notify: restart apache2
 
+    # Tareas delegadas a localhost con el intérprete del entorno virtual
     - name: Crear base de datos Zabbix
       mysql_db:
         name: "{{ db_name }}"
@@ -103,6 +100,8 @@
         login_user: root
         login_password: "{{ db_password }}"
       delegate_to: localhost
+      vars:
+        ansible_python_interpreter: ~/pymysql_env/bin/python
       run_once: true
 
     - name: Importar esquema inicial de base de datos
@@ -114,6 +113,8 @@
         login_user: "{{ db_user }}"
         login_password: "{{ db_password }}"
       delegate_to: localhost
+      vars:
+        ansible_python_interpreter: ~/pymysql_env/bin/python
       run_once: true
 
     - name: Iniciar y habilitar servicios
