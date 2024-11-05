@@ -3,15 +3,17 @@
   hosts: zabbix
   become: yes
   vars:
+    # Ruta del intérprete de Python en el entorno virtual
+    ansible_python_interpreter: ~/pymysql_env/bin/python
+
     # Variables para la base de datos
     db_host: "192.168.1.12"
     db_name: "zabbix"
     db_user: "zabbix"
     db_password: "Huawei12#$"
+    
     # Variables para PHP timezone
     php_timezone: "America/Bogota"
-    ansible_python_interpreter: ~/pymysql_env/bin/python
-
 
   tasks:
     - name: Asegurarse de que PyMySQL esté instalado para soporte MySQL
