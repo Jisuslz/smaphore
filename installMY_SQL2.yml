@@ -1,38 +1,21 @@
----
-- name: Configuración de MySQL desde repositorio oficial
+- name: Configuración de MySQL y zabbix
   hosts: db
   become: yes
 
   tasks:
-    - name: Descargar el paquete de configuración de repositorio de MySQL
-      get_url:
-        url: https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
-        dest: /tmp/mysql-apt-config.deb
-
-    - name: Instalar el paquete de configuración del repositorio de MySQL
-      apt:
-        deb: /tmp/mysql-apt-config.deb
-      register: mysql_repo_installed
-
-    - name: Actualizar lista de paquetes APT
-      apt:
-        update_cache: yes
-      when: mysql_repo_installed is changed
-
-    - name: Instalar MySQL Server desde el repositorio oficial
+    - name: Instalar MySQL Server
       apt:
         name: mysql-server
         state: present
 
-    - name: Instalar python3-pymysql
+    - name: Instalar python
       apt:
         name: python3-pymysql
         state: present
 
-    - name: Habilitar y Iniciar el servicio MySQL
-      systemd:
+    - name: Iniciar el servicio MySQL
+      service:
         name: mysql
-        enabled: yes
         state: started
 
     - name: Configurar acceso remoto desde 0.0.0.0
@@ -40,10 +23,8 @@
         path: /etc/mysql/mysql.conf.d/mysqld.cnf
         regexp: '^bind-address'
         line: 'bind-address = 0.0.0.0'
-        state: present
-        backup: yes
 
-    - name: Reiniciar MySQL para aplicar cambios de configuración
+    - name: Reiniciar MySQL
       service:
         name: mysql
         state: restarted
