@@ -10,6 +10,8 @@
     db_password: "Huawei12#$"
     # Variables para PHP timezone
     php_timezone: "America/Bogota"
+    ansible_python_interpreter: ~/pymysql_env/bin/python
+
 
   tasks:
     - name: Asegurarse de que PyMySQL esté instalado para soporte MySQL
