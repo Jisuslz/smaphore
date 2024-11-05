@@ -12,6 +12,12 @@
     php_timezone: "America/Bogota"
 
   tasks:
+    - name: Asegurarse de que PyMySQL esté instalado para soporte MySQL
+      apt:
+        name: python3-pymysql
+        state: present
+      become: yes
+
     - name: Descargar repositorio Zabbix
       get_url:
         url: "https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-1+ubuntu24.04_all.deb"
@@ -50,7 +56,6 @@
           - zabbix-agent
         state: present
 
-    # Crear directorio de plantillas localmente en el controlador de Ansible
     - name: Crear directorio de plantillas localmente
       local_action:
         module: file
@@ -58,7 +63,6 @@
         state: directory
         mode: '0755'
 
-    # Crear archivo de plantilla zabbix_server.conf.j2 en el controlador de Ansible
     - name: Crear archivo de plantilla zabbix_server.conf.j2
       local_action:
         module: copy
@@ -71,7 +75,6 @@
           DBPassword={{ db_password }}
         mode: '0644'
 
-    # Copiar archivo de configuración zabbix_server.conf al servidor gestionado
     - name: Configurar archivo zabbix_server.conf
       template:
         src: "./templates/zabbix_server.conf.j2"
