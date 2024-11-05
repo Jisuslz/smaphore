@@ -3,12 +3,10 @@
   hosts: zabbix
   become: yes
   vars:
-    # Variables para la base de datos
     db_host: "192.168.1.12"
     db_name: "zabbix"
     db_user: "zabbix"
     db_password: "Huawei12#$"
-    # Variables para PHP timezone
     php_timezone: "America/Bogota"
 
   tasks:
@@ -50,9 +48,26 @@
           - zabbix-agent
         state: present
 
+    - name: Crear el directorio de plantillas si no existe
+      file:
+        path: "/tmp/semaphore/repository_1_4/templates"
+        state: directory
+        mode: '0755'
+
+    - name: Crear archivo zabbix_server.conf.j2
+      copy:
+        dest: "/tmp/semaphore/repository_1_4/templates/zabbix_server.conf.j2"
+        content: |
+          # Archivo de configuración de Zabbix
+          DBHost={{ db_host }}
+          DBName={{ db_name }}
+          DBUser={{ db_user }}
+          DBPassword={{ db_password }}
+        mode: '0644'
+
     - name: Configurar archivo zabbix_server.conf
       template:
-        src: templates/zabbix_server.conf.j2
+        src: "/tmp/semaphore/repository_1_4/templates/zabbix_server.conf.j2"
         dest: /etc/zabbix/zabbix_server.conf
         owner: zabbix
         group: zabbix
