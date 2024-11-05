@@ -1,3 +1,4 @@
+---
 - name: Instalación Zabbix 7.0
   hosts: zabbix
   become: yes
@@ -15,15 +16,29 @@
       get_url:
         url: https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-1+ubuntu24.04_all.deb
         dest: /tmp/zabbix.deb
+      register: zabbix_repo_download
+      retries: 3
+      delay: 5
+      until: zabbix_repo_download is succeeded
+
+    - name: Verificar que el archivo Zabbix se descargó correctamente
+      stat:
+        path: /tmp/zabbix.deb
+      register: zabbix_deb_file
+
+    - name: Fallar si el archivo de Zabbix no existe
+      fail:
+        msg: "El archivo zabbix.deb no se descargó correctamente"
+      when: not zabbix_deb_file.stat.exists
 
     - name: Instalar repositorio Zabbix
       apt:
         deb: /tmp/zabbix.deb
-        
+
     - name: Actualizar repositorios
       apt:
         update_cache: yes
-        
+
     - name: Instalar componentes Zabbix
       apt:
         name:
@@ -43,19 +58,32 @@
         mode: '0640'
       notify: restart zabbix-server
 
-    - name: Configurar PHP timezone
+    - name: Configurar PHP timezone en apache.conf de Zabbix
       lineinfile:
         path: /etc/zabbix/apache.conf
         regexp: '^.*php_value date.timezone.*'
         line: "        php_value date.timezone {{ php_timezone }}"
       notify: restart apache2
 
+    - name: Crear base de datos Zabbix
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        login_host: "{{ db_host }}"
+        login_user: root
+        login_password: "{{ db_password }}"
+      delegate_to: localhost
+      run_once: true
+
     - name: Importar esquema inicial de base de datos
       mysql_db:
         name: "{{ db_name }}"
         state: import
         target: /usr/share/zabbix-sql-scripts/mysql/server.sql.gz
-      delegate_to: "{{ db_host }}"
+        login_host: "{{ db_host }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+      delegate_to: localhost
       run_once: true
 
     - name: Iniciar y habilitar servicios
