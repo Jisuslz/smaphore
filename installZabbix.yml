@@ -9,13 +9,14 @@
     db_user: "zabbix"
     db_password: "Huawei12#$"
     # Variables para PHP timezone
-    php_timezone: "America/Bogota"  # Ajusta según tu zona horaria
+    php_timezone: "America/Bogota"
 
   tasks:
     - name: Descargar repositorio Zabbix
       get_url:
-        url: https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-1+ubuntu24.04_all.deb
+        url: "https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-1+ubuntu24.04_all.deb"
         dest: /tmp/zabbix.deb
+        mode: '0644'
       register: zabbix_repo_download
       retries: 3
       delay: 5
@@ -26,10 +27,10 @@
         path: /tmp/zabbix.deb
       register: zabbix_deb_file
 
-    - name: Fallar si el archivo de Zabbix no existe
+    - name: Fallar si el archivo de Zabbix no existe o es muy pequeño
       fail:
-        msg: "El archivo zabbix.deb no se descargó correctamente"
-      when: not zabbix_deb_file.stat.exists
+        msg: "El archivo zabbix.deb no se descargó correctamente o está incompleto"
+      when: not zabbix_deb_file.stat.exists or zabbix_deb_file.stat.size < 1000
 
     - name: Instalar repositorio Zabbix
       apt:
@@ -47,7 +48,7 @@
           - zabbix-apache-conf
           - zabbix-sql-scripts
           - zabbix-agent
-        state: present
+        state: pres
 
     - name: Configurar archivo zabbix_server.conf
       template:
