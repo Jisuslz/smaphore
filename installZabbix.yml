@@ -1,3 +1,4 @@
+---
 - name: Instalación Zabbix 7.0
   hosts: zabbix
   become: yes
